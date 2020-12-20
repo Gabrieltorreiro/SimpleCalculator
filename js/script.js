@@ -1,89 +1,104 @@
+//Get buttons and display
 let display = document.querySelector("#textArea");
 let clearAll = document.querySelector("#clearAll");
-let igual = document.querySelector("#igual");
-let plus = document.querySelector("#plus");
-let menos = document.querySelector("#menos");
-let virgula = document.querySelector("#virgula");
+let equal = document.querySelector("#equal");
+let dot = document.querySelector("#dot");
+let operation = document.querySelectorAll("[data-operation]");
+let numbers = document.querySelectorAll("[data-number]");
 
-let num = [];
-for (let i = 0; i < 10; i++) {
-    num[i] = document.querySelector(`#num${i}`);
-}
+//Principal object
+let calculator;
 
-let calc;
-
-clearAll.onclick = function () {
+//These functions execute a command by click on button
+clearAll.onclick = () => {
     display.value = "";
-    calc.index = 0;
-    calc.calcArray = [];
+    calculator.index = 0;
+    calculator.calcArray = [];
 }
 
-menos.onclick = function () {
-    calc.calcArray[++calc.index] = "-";
-    calc.index++;
-    display.value += "-";
-}
-
-plus.onclick = function () {
-    calc.calcArray[++calc.index] = "+";
-    calc.index++;
-    display.value += "+";
-}
-
-virgula.onclick = function () {
-    if (calc.calcArray[calc.index] == undefined) {
-        calc.calcArray[calc.index] = "";
-    }
-    calc.calcArray[calc.index] += ".";
-    display.value += ",";
-}
-
-igual.onclick = function () {
-    calc.calculate();
-    calc.index = 0;
-    calc.calcArray[0] = calc.calcArray[0].toString();
-    calc.calcArray[0] = calc.calcArray[0].replace(".", ",");
-    display.value = calc.calcArray[0];
-    calc.calcArray[0] = calc.calcArray[0].replace(",", ".");
-}
-
-for (let i = 0; i < 10; i++) {
-    num[i].onclick = function () {
-        if (calc.calcArray[calc.index] == undefined) {
-            calc.calcArray[calc.index] = "";
+//Create an event for each number button
+numbers.forEach((number, i) => {
+    number.addEventListener("click", () => {
+        if (calculator.calcArray[calculator.index] == undefined) {
+            calculator.calcArray[calculator.index] = "";
         }
-        calc.calcArray[calc.index] += i.toString();
-        display.value += i;
+        calculator.calcArray[calculator.index] += number.value;
+        display.value += number.value;
+    });
+});
+
+//Create an event for each operation button
+operation.forEach((op) => {
+    if (op.value == "X") {
+        op.addEventListener("click", () => {
+            calculator.calcArray[++calculator.index] = "*";
+            calculator.index++;
+            display.value += "x";
+        });
+    } else {
+        op.addEventListener("click", () => {
+            calculator.calcArray[++calculator.index] = op.value;
+            calculator.index++;
+            display.value += op.value;
+        });
     }
+});
+
+dot.onclick = () => {
+    if (calculator.calcArray[calculator.index] == undefined) {
+        calculator.calcArray[calculator.index] = "";
+    }
+    calculator.calcArray[calculator.index] += ".";
+    display.value += ".";
 }
 
-Calculator = function () {
-    
+equal.onclick = () => {
+    calculator.calculate();
+    calculator.index = 0;
+    display.value = calculator.calcArray;
+}
+
+Calculator = () => {
+
     this.index = 0;         //Esse indice é usado para adicinar operações ou numeros na esquação
     this.calcArray = [];    //Essa é a array principal onde é armazenada as formulas e resultado final
 
     // Esse metodo verifica se a string é uma operação ou um numero
-    this.isItOp = function(str) {
+    this.isItOperation = (str) => {
         if (str == "+") {
             return 1;
         }
         if (str == "-") {
             return 2;
         }
+        if (str == "*") {
+            return 3;
+        }
+        if (str == "/") {
+            return 4;
+        }
         return -1;
     }
 
     // Esse metodo altera os valores de string para number
-    this.toNumber = function() {
+    this.toNumber = () => {
         for (let i in this.calcArray) {
-            if (this.isItOp(this.calcArray[i]) == -1) {
+            if (this.isItOperation(this.calcArray[i]) == -1) {
                 this.calcArray[i] = parseFloat(this.calcArray[i]);
             }
         }
     }
 
+    this.toString = () => {
+        for (let i in this.calcArray) {
+            if (this.isItOperation(this.calcArray[i]) == -1) {
+                this.calcArray[i] = this.calcArray[i].toString();
+            }
+        }
+    }
+
     // Esse método retira duas itens de um array ao mesmo tempo
-    this.remove = function(pos1, pos2) {
+    this.removeAfterAndBefore = (pos1, pos2) => {
         let buf = [];
         for (let i in this.calcArray) {
             if (i != pos1 && i != pos2) {
@@ -93,11 +108,11 @@ Calculator = function () {
         this.calcArray = buf;
     }
 
-    // Esse metodo conta os numeros de operações que teem para realizar
-    this.opLen = function() {
+    // Esse metodo conta os numeros de operações que tem para realizar
+    this.operationLength = () => {
         let cont = 0;
         for (let i in this.calcArray) {
-            if (this.isItOp(this.calcArray[i]) != -1) {
+            if (this.isItOperation(this.calcArray[i]) != -1) {
                 cont++;
             }
         }
@@ -105,29 +120,46 @@ Calculator = function () {
     }
 
     // Essa função altera na array principal e deixa o resultado no array[0]
-    this.calculate = function() {
+    this.calculate = () => {
         let buf;
-        let jump = false;
-        let ops = this.opLen();
+        let numbersOfOperation = this.operationLength();
         this.toNumber();
 
-        for (let x = 0; x < ops; x++) {
-            for (let i = 0; i < this.calcArray.length && jump == false; i++) {
-                if (this.isItOp(this.calcArray[i]) == 1) {
+        //External for is used to fetch for operations
+        for (let x = 0; x < numbersOfOperation; x++) {
+
+            for (let i = 0; i < this.calcArray.length; i++) {
+
+                if (this.isItOperation(this.calcArray[i]) == 3) {
+                    buf = this.calcArray[i - 1] * this.calcArray[i + 1];
+                    this.calcArray[i] = buf;
+                    this.removeAfterAndBefore(i - 1, i + 1);
+                }
+
+                if (this.isItOperation(this.calcArray[i]) == 4) {
+                    buf = this.calcArray[i - 1] / this.calcArray[i + 1];
+                    this.calcArray[i] = buf;
+                    this.removeAfterAndBefore(i - 1, i + 1);
+                }
+            }
+
+            for (let i = 0; i < this.calcArray.length; i++) {
+
+                if (this.isItOperation(this.calcArray[i]) == 1) {
                     buf = this.calcArray[i - 1] + this.calcArray[i + 1];
                     this.calcArray[i] = buf;
-                    this.remove(i - 1, i + 1);
-                    jump == true;
+                    this.removeAfterAndBefore(i - 1, i + 1);
                 }
-                if (this.isItOp(this.calcArray[i]) == 2) {
+
+                if (this.isItOperation(this.calcArray[i]) == 2) {
                     buf = this.calcArray[i - 1] - this.calcArray[i + 1];
                     this.calcArray[i] = buf;
-                    this.remove(i - 1, i + 1);
-                    jump == true;
+                    this.removeAfterAndBefore(i - 1, i + 1);
                 }
             }
         }
+        this.toString();
     }
 }
 
-calc = new Calculator();
+calculator = new Calculator();
