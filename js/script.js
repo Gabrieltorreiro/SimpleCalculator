@@ -58,7 +58,7 @@ equal.onclick = () => {
     display.value = calculator.calcArray;
 }
 
-Calculator = () => {
+Calculator = function() {
 
     this.index = 0;         //Esse indice é usado para adicinar operações ou numeros na esquação
     this.calcArray = [];    //Essa é a array principal onde é armazenada as formulas e resultado final
