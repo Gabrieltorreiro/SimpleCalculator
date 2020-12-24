@@ -6,6 +6,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="./css/style.css">
+    <script type="module" src="./js/script.js"></script>
     <title>SimpleCalculator</title>
 </head>
 
@@ -18,7 +19,7 @@
             </div>
             <div class="buttons">
                 <input id="clearAll" type="button" value="C"></input>
-                <input id="aspas" type="button" value="( )"></input>
+                <input data-parentheses type="button" value="( )"></input>
                 <input data-operation id="perc" type="button" value="%"></input>
                 <input data-operation id="div" type="button" value="/"></input>
                 <input data-number type="button" value="7"></input>
@@ -40,8 +41,6 @@
             </div>
         </div>
     </div>
-
-    <script src="./js/script.js"></script>
 </body>
 
 </html>
